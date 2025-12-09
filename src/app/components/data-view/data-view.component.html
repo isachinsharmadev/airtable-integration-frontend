@@ -1,0 +1,7 @@
+<div class="data-view-container">
+    <h2>Airtable Revision History</h2>
+
+    <ag-grid-angular style="width: 100%; height: 600px;" class="ag-theme-alpine" [rowData]="rowData"
+        [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" [pagination]="true" [paginationPageSize]="20"
+        (gridReady)="onGridReady($event)"></ag-grid-angular>
+</div>

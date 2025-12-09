@@ -35,6 +35,7 @@ export class AuthenticationComponent implements OnInit {
   oauthLoading = false;
   scrapingLoading = false;
   hidePassword = true;
+  mfaRequired = false; // Track if MFA is required
 
   scrapingCreds = {
     email: '',
@@ -121,15 +122,47 @@ export class AuthenticationComponent implements OnInit {
     this.scrapingLoading = true;
     this.airtableService.authenticateScraping(this.scrapingCreds).subscribe({
       next: (response) => {
-        this.showMessage('Scraping authentication successful', 'success');
+        // Check if MFA is required (response.mfaRequired will be true)
+        if (response.mfaRequired) {
+          this.mfaRequired = true;
+          this.showMessage(
+            response.message ||
+              'MFA code required. Please enter the 6-digit code from your authenticator app.',
+            'warning'
+          );
+          this.scrapingLoading = false;
+          // Keep the form visible so user can enter MFA code
+          return;
+        }
+
+        // Success - authentication complete
+        this.mfaRequired = false;
+        this.showMessage('Scraping authentication successful!', 'success');
         this.loadStatus();
         this.scrapingLoading = false;
+
+        // Clear the form
+        this.scrapingCreds = {
+          email: '',
+          password: '',
+          mfaCode: '',
+        };
       },
       error: (err) => {
-        this.showMessage(
-          err.error?.message || 'Authentication failed',
-          'error'
-        );
+        // Check if error response contains MFA requirement
+        if (err.error?.mfaRequired) {
+          this.mfaRequired = true;
+          this.showMessage(
+            err.error.message ||
+              'MFA code required. Please enter the 6-digit code from your authenticator app.',
+            'warning'
+          );
+        } else {
+          this.showMessage(
+            err.error?.message || err.error?.error || 'Authentication failed',
+            'error'
+          );
+        }
         this.scrapingLoading = false;
       },
     });
@@ -174,7 +207,7 @@ export class AuthenticationComponent implements OnInit {
 
   showMessage(message: string, type: 'success' | 'error' | 'warning') {
     this.snackBar.open(message, 'Close', {
-      duration: 4000,
+      duration: type === 'warning' ? 8000 : 4000, // Show warnings longer
       panelClass: [`snackbar-${type}`],
     });
   }

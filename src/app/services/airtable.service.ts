@@ -48,7 +48,7 @@ export class AirtableService {
   }
 
   fetchAllData(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/data/fetch-all`, {});
+    return this.http.post(`${this.apiUrl}/data/fetch-all-parallel`, {});
   }
 
   // Get stored data

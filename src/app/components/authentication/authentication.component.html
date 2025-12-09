@@ -76,6 +76,15 @@
         </div>
       </div>
 
+      <!-- MFA Required Banner -->
+      <div *ngIf="mfaRequired" class="mfa-banner">
+        <mat-icon>shield</mat-icon>
+        <div class="mfa-message">
+          <strong>MFA Required</strong>
+          <p>Please enter the 6-digit code from your authenticator app below and click Authenticate again.</p>
+        </div>
+      </div>
+
       <form class="scraping-form" (ngSubmit)="authenticateScraping()">
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
@@ -94,21 +103,25 @@
           </button>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>MFA Code (Optional)</mat-label>
-          <input matInput [(ngModel)]="scrapingCreds.mfaCode" name="mfaCode" placeholder="Enter if MFA is enabled" />
-          <mat-icon matSuffix>security</mat-icon>
+        <mat-form-field appearance="outline" class="full-width" [class.mfa-highlight]="mfaRequired">
+          <mat-label>MFA Code {{ mfaRequired ? '(Required)' : '(Optional)' }}</mat-label>
+          <input matInput [(ngModel)]="scrapingCreds.mfaCode" name="mfaCode"
+            [placeholder]="mfaRequired ? 'Enter 6-digit code' : 'Enter if MFA is enabled'" maxlength="6"
+            [required]="mfaRequired" />
+          <mat-icon matSuffix [class.mfa-required-icon]="mfaRequired">security</mat-icon>
+          <mat-hint *ngIf="mfaRequired">Enter the code from your authenticator app</mat-hint>
         </mat-form-field>
 
         <div class="form-actions">
           <button mat-raised-button color="primary" type="submit" [disabled]="
                   scrapingLoading ||
                   !scrapingCreds.email ||
-                  !scrapingCreds.password
+                  !scrapingCreds.password ||
+                  (mfaRequired && !scrapingCreds.mfaCode)
                 ">
             <mat-spinner *ngIf="scrapingLoading" diameter="20"></mat-spinner>
-            <mat-icon *ngIf="!scrapingLoading">login</mat-icon>
-            Authenticate
+            <mat-icon *ngIf="!scrapingLoading">{{ mfaRequired ? 'shield' : 'login' }}</mat-icon>
+            {{ mfaRequired ? 'Verify MFA' : 'Authenticate' }}
           </button>
           <button mat-button type="button" (click)="validateCookies()" [disabled]="scrapingLoading">
             <mat-icon>verified</mat-icon>
@@ -142,6 +155,13 @@
           Scraping authentication is required to access revision history
           which is not available via the API. Enter your Airtable
           credentials to retrieve cookies for scraping.
+        </p>
+
+        <h3>Multi-Factor Authentication (MFA)</h3>
+        <p>
+          If your Airtable account has MFA enabled, you'll be prompted to enter
+          your 6-digit authentication code after submitting your email and password.
+          Simply enter the code from your authenticator app and click "Verify MFA".
         </p>
 
         <p class="warning-text">
