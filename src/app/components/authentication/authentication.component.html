@@ -1,0 +1,155 @@
+<div class="auth-container">
+  <h1 class="page-title">Authentication</h1>
+
+  <!-- OAuth Section -->
+  <mat-card class="auth-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">vpn_key</mat-icon>
+      <mat-card-title>OAuth 2.0 Authentication</mat-card-title>
+      <mat-card-subtitle>Connect to Airtable API using OAuth</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="status-section">
+        <div class="status-item">
+          <strong>Status:</strong>
+          <span [class]="
+                  authStatus.authenticated ? 'status-active' : 'status-inactive'
+                ">
+            {{ authStatus.authenticated ? 'Connected' : 'Not Connected' }}
+          </span>
+        </div>
+        <div *ngIf="authStatus.authenticated && authStatus.expiresAt" class="status-item">
+          <strong>Expires:</strong>
+          <span>{{ formatDate(authStatus.expiresAt) }}</span>
+        </div>
+        <div *ngIf="authStatus.expired" class="status-item warning">
+          <mat-icon>warning</mat-icon>
+          Token expired. Please refresh or re-authenticate.
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button color="primary" (click)="initiateOAuth()" [disabled]="oauthLoading">
+        <mat-spinner *ngIf="oauthLoading" diameter="20"></mat-spinner>
+        <mat-icon *ngIf="!oauthLoading">login</mat-icon>
+        {{
+        authStatus.authenticated
+        ? 'Re-authenticate'
+        : 'Connect with Airtable'
+        }}
+      </button>
+      <button mat-button (click)="refreshToken()" *ngIf="authStatus.authenticated" [disabled]="oauthLoading">
+        <mat-icon>refresh</mat-icon>
+        Refresh Token
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-divider style="margin: 32px 0;"></mat-divider>
+
+  <!-- Scraping Authentication Section -->
+  <mat-card class="auth-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">cookie</mat-icon>
+      <mat-card-title>Scraping Authentication</mat-card-title>
+      <mat-card-subtitle>Login for accessing revision history</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="status-section">
+        <div class="status-item">
+          <strong>Cookie Status:</strong>
+          <span [class]="
+                  cookieStatus.valid ? 'status-active' : 'status-inactive'
+                ">
+            {{
+            cookieStatus.hasCookies
+            ? cookieStatus.valid
+            ? 'Valid'
+            : 'Invalid'
+            : 'Not Available'
+            }}
+          </span>
+        </div>
+        <div *ngIf="cookieStatus.lastValidated" class="status-item">
+          <strong>Last Validated:</strong>
+          <span>{{ formatDate(cookieStatus.lastValidated) }}</span>
+        </div>
+      </div>
+
+      <form class="scraping-form" (ngSubmit)="authenticateScraping()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [(ngModel)]="scrapingCreds.email" name="email" required />
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="scrapingCreds.password"
+            name="password" required />
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>{{
+              hidePassword ? 'visibility_off' : 'visibility'
+              }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>MFA Code (Optional)</mat-label>
+          <input matInput [(ngModel)]="scrapingCreds.mfaCode" name="mfaCode" placeholder="Enter if MFA is enabled" />
+          <mat-icon matSuffix>security</mat-icon>
+        </mat-form-field>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="
+                  scrapingLoading ||
+                  !scrapingCreds.email ||
+                  !scrapingCreds.password
+                ">
+            <mat-spinner *ngIf="scrapingLoading" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!scrapingLoading">login</mat-icon>
+            Authenticate
+          </button>
+          <button mat-button type="button" (click)="validateCookies()" [disabled]="scrapingLoading">
+            <mat-icon>verified</mat-icon>
+            Validate Cookies
+          </button>
+          <button mat-button color="warn" type="button" (click)="clearCookies()" [disabled]="scrapingLoading">
+            <mat-icon>delete</mat-icon>
+            Clear Cookies
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="help-section">
+    <mat-card>
+      <mat-card-header>
+        <mat-icon class="section-icon">help</mat-icon>
+        <mat-card-title>Authentication Guide</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <h3>OAuth Authentication</h3>
+        <p>
+          OAuth is used to access the Airtable API for fetching bases,
+          tables, and records. Click "Connect with Airtable" to start the
+          OAuth flow.
+        </p>
+
+        <h3>Scraping Authentication</h3>
+        <p>
+          Scraping authentication is required to access revision history
+          which is not available via the API. Enter your Airtable
+          credentials to retrieve cookies for scraping.
+        </p>
+
+        <p class="warning-text">
+          <mat-icon>warning</mat-icon>
+          Note: Your credentials are used only to retrieve cookies and are
+          not stored.
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

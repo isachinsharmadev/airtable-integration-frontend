@@ -1,0 +1,62 @@
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbar {
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.spacer {
+    flex: 1 1 auto;
+}
+
+.spacer-small {
+    margin-left: 12px;
+}
+
+.drawer-container {
+    flex: 1;
+    background-color: #fafafa;
+}
+
+.drawer {
+    width: 250px;
+    padding: 16px 0;
+    background-color: white;
+    border-right: 1px solid #e0e0e0;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+}
+
+.progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
+
+.content-wrapper {
+    padding: 24px;
+    flex: 1;
+    overflow: auto;
+}
+
+.active-link {
+    background-color: rgba(63, 81, 181, 0.1);
+    color: #3f51b5;
+}
+
+mat-icon[matListItemIcon] {
+    color: rgba(0, 0, 0, 0.54);
+}
+
+.active-link mat-icon[matListItemIcon] {
+    color: #3f51b5;
+}

@@ -1,0 +1,134 @@
+<div class="scraping-container">
+  <h1 class="page-title">Revision History Scraping</h1>
+
+  <mat-card class="info-card">
+    <mat-card-content>
+      <div class="info-content">
+        <mat-icon color="primary">info</mat-icon>
+        <div>
+          <p><strong>Fetch revision history for all pages</strong></p>
+          <p>This uses custom scraping to retrieve assignee and status changes from Airtable's revision history.</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Cookie Status -->
+  <mat-card class="status-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">cookie</mat-icon>
+      <mat-card-title>Cookie Status</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="status-content">
+        <div class="status-item">
+          <strong>Status:</strong>
+          <mat-chip [color]="cookieStatus.valid ? 'primary' : 'warn'" highlighted>
+            {{ cookieStatus.hasCookies ? (cookieStatus.valid ? 'Valid' : 'Invalid') : 'Not Available' }}
+          </mat-chip>
+        </div>
+        <div *ngIf="cookieStatus.lastValidated" class="status-item">
+          <strong>Last Validated:</strong>
+          <span>{{ cookieStatus.lastValidated | date:'medium' }}</span>
+        </div>
+        <div *ngIf="!cookieStatus.hasCookies || !cookieStatus.valid" class="warning-box">
+          <mat-icon>warning</mat-icon>
+          <span>Please authenticate in the Authentication page before fetching revision history.</span>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-raised-button (click)="validateCookies()" [disabled]="loading">
+        <mat-icon>verified</mat-icon>
+        Validate Cookies
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Statistics -->
+  <mat-card class="stats-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">analytics</mat-icon>
+      <mat-card-title>Revision History Statistics</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <mat-icon>description</mat-icon>
+          <div class="stat-value">{{ revisionStats.totalPages || 0 }}</div>
+          <div class="stat-label">Pages Processed</div>
+        </div>
+        <div class="stat-item">
+          <mat-icon>change_circle</mat-icon>
+          <div class="stat-value">{{ revisionStats.totalRevisions || 0 }}</div>
+          <div class="stat-label">Total Revisions</div>
+        </div>
+        <div class="stat-item">
+          <mat-icon>person</mat-icon>
+          <div class="stat-value">{{ revisionStats.assigneeChanges || 0 }}</div>
+          <div class="stat-label">Assignee Changes</div>
+        </div>
+        <div class="stat-item">
+          <mat-icon>flag</mat-icon>
+          <div class="stat-value">{{ revisionStats.statusChanges || 0 }}</div>
+          <div class="stat-label">Status Changes</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Actions -->
+  <mat-card class="action-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">play_arrow</mat-icon>
+      <mat-card-title>Fetch Revision History</mat-card-title>
+      <mat-card-subtitle>Process up to 200 pages automatically</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="action-content">
+        <p>Click the button below to start fetching revision history for all pages. This process will:</p>
+        <ul>
+          <li>Use authenticated cookies to access revision history</li>
+          <li>Process pages in batches of {{ batchSize }}</li>
+          <li>Extract assignee and status changes</li>
+          <li>Store parsed data in MongoDB</li>
+          <li>Handle up to 200 pages automatically</li>
+        </ul>
+        <div class="action-buttons">
+          <button mat-raised-button color="primary" (click)="fetchAllRevisions()"
+            [disabled]="loading || !cookieStatus.valid">
+            <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!loading">cloud_download</mat-icon>
+            Fetch All Revision Histories
+          </button>
+          <button mat-raised-button (click)="refreshStats()" [disabled]="loading">
+            <mat-icon>refresh</mat-icon>
+            Refresh Statistics
+          </button>
+        </div>
+        <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Help -->
+  <mat-card class="help-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">help</mat-icon>
+      <mat-card-title>How It Works</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <h3>Scraping Process</h3>
+      <ol>
+        <li>Validates cookies are still active</li>
+        <li>Fetches all pages from MongoDB</li>
+        <li>Makes requests to Airtable's revision history endpoint</li>
+        <li>Parses HTML response to extract changes</li>
+        <li>Filters for assignee and status changes only</li>
+        <li>Stores structured data in MongoDB</li>
+      </ol>
+      <h3>View Results</h3>
+      <p>After processing completes, view the revision history data in the "Data View" section.</p>
+    </mat-card-content>
+  </mat-card>
+</div>

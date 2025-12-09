@@ -1,0 +1,183 @@
+<div class="data-fetch-container">
+  <h1 class="page-title">Data Fetch</h1>
+
+  <mat-card class="info-card">
+    <mat-card-content>
+      <div class="info-content">
+        <mat-icon color="primary">info</mat-icon>
+        <div>
+          <p><strong>Fetch data from Airtable using OAuth API</strong></p>
+          <p>
+            This will retrieve bases, tables, and records (pages) and store
+            them in MongoDB with full pagination support.
+          </p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Quick Actions -->
+  <mat-card class="action-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">flash_on</mat-icon>
+      <mat-card-title>Quick Actions</mat-card-title>
+      <mat-card-subtitle>Fetch all data at once</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="action-buttons">
+        <button mat-raised-button color="primary" (click)="fetchAllData()" [disabled]="loading">
+          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+          <mat-icon *ngIf="!loading">cloud_download</mat-icon>
+          Fetch All Data
+        </button>
+        <button mat-raised-button (click)="refreshStats()" [disabled]="loading">
+          <mat-icon>refresh</mat-icon>
+          Refresh Statistics
+        </button>
+      </div>
+      <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Statistics -->
+  <mat-card class="stats-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">analytics</mat-icon>
+      <mat-card-title>Current Statistics</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <mat-icon>folder</mat-icon>
+          <div class="stat-value">{{ stats.bases || 0 }}</div>
+          <div class="stat-label">Bases</div>
+        </div>
+        <div class="stat-item">
+          <mat-icon>table_chart</mat-icon>
+          <div class="stat-value">{{ stats.tables || 0 }}</div>
+          <div class="stat-label">Tables</div>
+        </div>
+        <div class="stat-item">
+          <mat-icon>description</mat-icon>
+          <div class="stat-value">{{ stats.pages || 0 }}</div>
+          <div class="stat-label">Pages</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Individual Fetch Operations -->
+  <mat-card class="operations-card">
+    <mat-card-header>
+      <mat-icon class="section-icon">settings</mat-icon>
+      <mat-card-title>Individual Operations</mat-card-title>
+      <mat-card-subtitle>Fetch data step by step</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <!-- Bases -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>folder</mat-icon>
+            <span>Fetch Bases</span>
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ bases.length }} bases loaded
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="panel-content">
+          <button mat-raised-button color="primary" (click)="fetchBases()" [disabled]="loading">
+            <mat-icon>cloud_download</mat-icon>
+            Fetch Bases
+          </button>
+
+          <mat-list *ngIf="bases.length > 0" class="data-list">
+            <mat-list-item *ngFor="let base of bases">
+              <mat-icon matListItemIcon>folder</mat-icon>
+              <div matListItemTitle>{{ base.name }}</div>
+              <div matListItemLine>ID: {{ base.baseId }}</div>
+              <button mat-icon-button (click)="fetchTablesForBase(base.baseId)" [disabled]="loading">
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </mat-expansion-panel>
+
+      <!-- Tables -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>table_chart</mat-icon>
+            <span>Fetch Tables</span>
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ tables.length }} tables loaded
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="panel-content">
+          <p class="hint">Select a base above to fetch its tables</p>
+
+          <mat-list *ngIf="tables.length > 0" class="data-list">
+            <mat-list-item *ngFor="let table of tables">
+              <mat-icon matListItemIcon>table_chart</mat-icon>
+              <div matListItemTitle>{{ table.name }}</div>
+              <div matListItemLine>
+                Base: {{ table.baseId }} | Fields:
+                {{ table.fields?.length || 0 }}
+              </div>
+              <button mat-icon-button (click)="fetchPagesForTable(table.baseId, table.tableId)" [disabled]="loading">
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+            </mat-list-item>
+          </mat-list>
+        </div>
+      </mat-expansion-panel>
+
+      <!-- Pages -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>description</mat-icon>
+            <span>Fetch Pages</span>
+          </mat-panel-title>
+          <mat-panel-description>
+            {{ pages.length }} pages loaded
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+
+        <div class="panel-content">
+          <p class="hint">Select a table above to fetch its pages</p>
+
+          <div *ngIf="pages.length > 0" class="pages-summary">
+            <p>
+              <strong>{{ pages.length }}</strong> pages fetched successfully
+            </p>
+            <p class="hint">
+              View detailed data in the "Data View" section
+            </p>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Activity Log -->
+  <mat-card class="log-card" *ngIf="activityLog.length > 0">
+    <mat-card-header>
+      <mat-icon class="section-icon">history</mat-icon>
+      <mat-card-title>Activity Log</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="log-list">
+        <div *ngFor="let log of activityLog" class="log-item" [class]="log.type">
+          <mat-icon>{{ log.icon }}</mat-icon>
+          <span class="log-time">{{ log.time }}</span>
+          <span class="log-message">{{ log.message }}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
