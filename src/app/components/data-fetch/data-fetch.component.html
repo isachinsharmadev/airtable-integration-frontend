@@ -1,183 +1,287 @@
+<!-- Data Fetch Container -->
 <div class="data-fetch-container">
-  <h1 class="page-title">Data Fetch</h1>
-
-  <mat-card class="info-card">
-    <mat-card-content>
-      <div class="info-content">
-        <mat-icon color="primary">info</mat-icon>
-        <div>
-          <p><strong>Fetch data from Airtable using OAuth API</strong></p>
-          <p>
-            This will retrieve bases, tables, and records (pages) and store
-            them in MongoDB with full pagination support.
-          </p>
-        </div>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">cloud_download</mat-icon>
+      <div class="header-text">
+        <h1 class="page-title">Data Fetch</h1>
+        <p class="page-subtitle">Retrieve bases, tables, and records from Airtable</p>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 
-  <!-- Quick Actions -->
-  <mat-card class="action-card">
-    <mat-card-header>
-      <mat-icon class="section-icon">flash_on</mat-icon>
-      <mat-card-title>Quick Actions</mat-card-title>
-      <mat-card-subtitle>Fetch all data at once</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="action-buttons">
-        <button mat-raised-button color="primary" (click)="fetchAllData()" [disabled]="loading">
-          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-          <mat-icon *ngIf="!loading">cloud_download</mat-icon>
-          Fetch All Data
-        </button>
-        <button mat-raised-button (click)="refreshStats()" [disabled]="loading">
-          <mat-icon>refresh</mat-icon>
-          Refresh Statistics
-        </button>
-      </div>
-      <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-    </mat-card-content>
-  </mat-card>
-
-  <!-- Statistics -->
-  <mat-card class="stats-card">
-    <mat-card-header>
-      <mat-icon class="section-icon">analytics</mat-icon>
-      <mat-card-title>Current Statistics</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <mat-icon>folder</mat-icon>
-          <div class="stat-value">{{ stats.bases || 0 }}</div>
-          <div class="stat-label">Bases</div>
-        </div>
-        <div class="stat-item">
-          <mat-icon>table_chart</mat-icon>
-          <div class="stat-value">{{ stats.tables || 0 }}</div>
-          <div class="stat-label">Tables</div>
-        </div>
-        <div class="stat-item">
-          <mat-icon>description</mat-icon>
-          <div class="stat-value">{{ stats.pages || 0 }}</div>
-          <div class="stat-label">Pages</div>
-        </div>
-      </div>
-    </mat-card-content>
-  </mat-card>
-
-  <!-- Individual Fetch Operations -->
-  <mat-card class="operations-card">
-    <mat-card-header>
-      <mat-icon class="section-icon">settings</mat-icon>
-      <mat-card-title>Individual Operations</mat-card-title>
-      <mat-card-subtitle>Fetch data step by step</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <!-- Bases -->
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <mat-icon>folder</mat-icon>
-            <span>Fetch Bases</span>
-          </mat-panel-title>
-          <mat-panel-description>
-            {{ bases.length }} bases loaded
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-
-        <div class="panel-content">
-          <button mat-raised-button color="primary" (click)="fetchBases()" [disabled]="loading">
-            <mat-icon>cloud_download</mat-icon>
-            Fetch Bases
-          </button>
-
-          <mat-list *ngIf="bases.length > 0" class="data-list">
-            <mat-list-item *ngFor="let base of bases">
-              <mat-icon matListItemIcon>folder</mat-icon>
-              <div matListItemTitle>{{ base.name }}</div>
-              <div matListItemLine>ID: {{ base.baseId }}</div>
-              <button mat-icon-button (click)="fetchTablesForBase(base.baseId)" [disabled]="loading">
-                <mat-icon>arrow_forward</mat-icon>
-              </button>
-            </mat-list-item>
-          </mat-list>
-        </div>
-      </mat-expansion-panel>
-
-      <!-- Tables -->
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <mat-icon>table_chart</mat-icon>
-            <span>Fetch Tables</span>
-          </mat-panel-title>
-          <mat-panel-description>
-            {{ tables.length }} tables loaded
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-
-        <div class="panel-content">
-          <p class="hint">Select a base above to fetch its tables</p>
-
-          <mat-list *ngIf="tables.length > 0" class="data-list">
-            <mat-list-item *ngFor="let table of tables">
-              <mat-icon matListItemIcon>table_chart</mat-icon>
-              <div matListItemTitle>{{ table.name }}</div>
-              <div matListItemLine>
-                Base: {{ table.baseId }} | Fields:
-                {{ table.fields?.length || 0 }}
-              </div>
-              <button mat-icon-button (click)="fetchPagesForTable(table.baseId, table.tableId)" [disabled]="loading">
-                <mat-icon>arrow_forward</mat-icon>
-              </button>
-            </mat-list-item>
-          </mat-list>
-        </div>
-      </mat-expansion-panel>
-
-      <!-- Pages -->
-      <mat-expansion-panel>
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            <mat-icon>description</mat-icon>
-            <span>Fetch Pages</span>
-          </mat-panel-title>
-          <mat-panel-description>
-            {{ pages.length }} pages loaded
-          </mat-panel-description>
-        </mat-expansion-panel-header>
-
-        <div class="panel-content">
-          <p class="hint">Select a table above to fetch its pages</p>
-
-          <div *ngIf="pages.length > 0" class="pages-summary">
-            <p>
-              <strong>{{ pages.length }}</strong> pages fetched successfully
-            </p>
-            <p class="hint">
-              View detailed data in the "Data View" section
-            </p>
+  <!-- Two-Column Layout -->
+  <div class="data-layout">
+    <!-- Left Column: Actions and Operations -->
+    <div class="data-column left-column">
+      <!-- Info Card -->
+      <mat-card class="info-card">
+        <mat-card-content>
+          <div class="info-content">
+            <mat-icon>info</mat-icon>
+            <div>
+              <p><strong>OAuth API Data Fetching</strong></p>
+              <p>Retrieves data from Airtable and stores it in MongoDB with full pagination support.</p>
+            </div>
           </div>
-        </div>
-      </mat-expansion-panel>
-    </mat-card-content>
-  </mat-card>
+        </mat-card-content>
+      </mat-card>
 
-  <!-- Activity Log -->
-  <mat-card class="log-card" *ngIf="activityLog.length > 0">
-    <mat-card-header>
-      <mat-icon class="section-icon">history</mat-icon>
-      <mat-card-title>Activity Log</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="log-list">
-        <div *ngFor="let log of activityLog" class="log-item" [class]="log.type">
-          <mat-icon>{{ log.icon }}</mat-icon>
-          <span class="log-time">{{ log.time }}</span>
-          <span class="log-message">{{ log.message }}</span>
-        </div>
-      </div>
-    </mat-card-content>
-  </mat-card>
+      <!-- Quick Actions Card -->
+      <mat-card class="action-card">
+        <mat-card-header>
+          <div class="card-header-content">
+            <mat-icon class="section-icon">flash_on</mat-icon>
+            <div class="header-text">
+              <mat-card-title>Quick Actions</mat-card-title>
+              <mat-card-subtitle>Fetch all data at once</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="action-buttons">
+            <button mat-raised-button color="primary" class="primary-button" (click)="fetchAllData()"
+              [disabled]="isAnyLoading()" matTooltip="Fetch bases, tables, and pages in one operation">
+              <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+              <mat-icon *ngIf="!loading">cloud_download</mat-icon>
+              Fetch All Data
+            </button>
+            <button mat-stroked-button class="secondary-button" (click)="refreshStats()" [disabled]="isAnyLoading()"
+              matTooltip="Refresh current statistics">
+              <mat-icon>refresh</mat-icon>
+              Refresh Stats
+            </button>
+          </div>
+          <mat-progress-bar *ngIf="loading" mode="indeterminate" color="primary"></mat-progress-bar>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Individual Operations Card -->
+      <mat-card class="operations-card">
+        <mat-card-header>
+          <div class="card-header-content">
+            <mat-icon class="section-icon">settings</mat-icon>
+            <div class="header-text">
+              <mat-card-title>Individual Operations</mat-card-title>
+              <mat-card-subtitle>Fetch data step by step</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <!-- Bases Panel -->
+          <mat-expansion-panel [(expanded)]="expandedPanels.bases">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>folder</mat-icon>
+                <span>Fetch Bases</span>
+                <span class="count-badge" *ngIf="bases.length > 0" [matBadge]="bases.length"
+                  matBadgeColor="primary"></span>
+              </mat-panel-title>
+              <mat-panel-description>
+                {{ bases.length }} base{{ bases.length !== 1 ? 's' : '' }} loaded
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <div class="panel-content">
+              <button mat-raised-button color="primary" class="panel-button" (click)="fetchBases()"
+                [disabled]="isAnyLoading()">
+                <mat-spinner *ngIf="basesLoading" diameter="20" class="button-spinner"></mat-spinner>
+                <mat-icon *ngIf="!basesLoading">cloud_download</mat-icon>
+                Fetch Bases
+              </button>
+
+              <!-- Bases List -->
+              <mat-list *ngIf="bases.length > 0" class="data-list">
+                <mat-list-item *ngFor="let base of bases" class="list-item">
+                  <mat-icon matListItemIcon class="list-icon">folder</mat-icon>
+                  <div matListItemTitle class="list-title">{{ base.name }}</div>
+                  <div matListItemLine class="list-subtitle">
+                    <span class="badge">ID: {{ base.baseId }}</span>
+                    <span class="badge" *ngIf="getTablesForBase(base.baseId).length > 0">
+                      {{ getTablesForBase(base.baseId).length }} tables
+                    </span>
+                  </div>
+                  <button mat-icon-button class="list-action" (click)="fetchTablesForBase(base.baseId, base.name)"
+                    [disabled]="isAnyLoading()" matTooltip="Fetch tables for this base">
+                    <mat-icon>arrow_forward</mat-icon>
+                  </button>
+                </mat-list-item>
+              </mat-list>
+
+              <!-- Empty State -->
+              <div *ngIf="bases.length === 0 && !basesLoading" class="empty-state">
+                <mat-icon>folder_off</mat-icon>
+                <p>No bases loaded yet</p>
+                <p class="hint">Click "Fetch Bases" to load your bases</p>
+              </div>
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Tables Panel -->
+          <mat-expansion-panel [(expanded)]="expandedPanels.tables">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>table_chart</mat-icon>
+                <span>Fetch Tables</span>
+                <span class="count-badge" *ngIf="tables.length > 0" [matBadge]="tables.length"
+                  matBadgeColor="primary"></span>
+              </mat-panel-title>
+              <mat-panel-description>
+                {{ tables.length }} table{{ tables.length !== 1 ? 's' : '' }} loaded
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <div class="panel-content">
+              <p class="hint" *ngIf="bases.length === 0">
+                <mat-icon>info</mat-icon>
+                Fetch bases first, then select a base to fetch its tables
+              </p>
+
+              <!-- Tables List -->
+              <mat-list *ngIf="tables.length > 0" class="data-list">
+                <mat-list-item *ngFor="let table of tables" class="list-item">
+                  <mat-icon matListItemIcon class="list-icon">table_chart</mat-icon>
+                  <div matListItemTitle class="list-title">{{ table.name }}</div>
+                  <div matListItemLine class="list-subtitle">
+                    <span class="badge">Base: {{ table.baseName || table.baseId }}</span>
+                    <span class="badge">{{ table.fields?.length || 0 }} fields</span>
+                  </div>
+                  <button mat-icon-button class="list-action"
+                    (click)="fetchPagesForTable(table.baseId, table.tableId, table.name)" [disabled]="isAnyLoading()"
+                    matTooltip="Fetch pages for this table">
+                    <mat-icon>arrow_forward</mat-icon>
+                  </button>
+                </mat-list-item>
+              </mat-list>
+
+              <!-- Empty State -->
+              <div *ngIf="tables.length === 0 && !tablesLoading && bases.length > 0" class="empty-state">
+                <mat-icon>table_chart_view</mat-icon>
+                <p>No tables loaded yet</p>
+                <p class="hint">Select a base above to fetch its tables</p>
+              </div>
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Pages Panel -->
+          <mat-expansion-panel [(expanded)]="expandedPanels.pages">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>description</mat-icon>
+                <span>Fetch Pages</span>
+                <span class="count-badge" *ngIf="pages.length > 0" [matBadge]="pages.length"
+                  matBadgeColor="primary"></span>
+              </mat-panel-title>
+              <mat-panel-description>
+                {{ pages.length }} page{{ pages.length !== 1 ? 's' : '' }} loaded
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <div class="panel-content">
+              <p class="hint" *ngIf="tables.length === 0">
+                <mat-icon>info</mat-icon>
+                Fetch tables first, then select a table to fetch its pages
+              </p>
+
+              <!-- Pages Summary -->
+              <div *ngIf="pages.length > 0" class="pages-summary">
+                <div class="summary-content">
+                  <mat-icon>check_circle</mat-icon>
+                  <div>
+                    <p><strong>{{ pages.length }}</strong> pages fetched successfully</p>
+                    <p class="hint">View detailed data in the "Data View" section</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div *ngIf="pages.length === 0 && !pagesLoading && tables.length > 0" class="empty-state">
+                <mat-icon>description</mat-icon>
+                <p>No pages loaded yet</p>
+                <p class="hint">Select a table above to fetch its pages</p>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Right Column: Statistics and Activity Log -->
+    <div class="data-column right-column">
+      <!-- Statistics Card -->
+      <mat-card class="stats-card">
+        <mat-card-header>
+          <div class="card-header-content">
+            <mat-icon class="section-icon">analytics</mat-icon>
+            <div class="header-text">
+              <mat-card-title>Current Statistics</mat-card-title>
+              <mat-card-subtitle>Live data counts</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-icon">
+                <mat-icon>folder</mat-icon>
+              </div>
+              <div class="stat-value">{{ stats.bases || 0 }}</div>
+              <div class="stat-label">Bases</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">
+                <mat-icon>table_chart</mat-icon>
+              </div>
+              <div class="stat-value">{{ stats.tables || 0 }}</div>
+              <div class="stat-label">Tables</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">
+                <mat-icon>description</mat-icon>
+              </div>
+              <div class="stat-value">{{ stats.pages || 0 }}</div>
+              <div class="stat-label">Pages</div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Activity Log Card -->
+      <mat-card class="log-card" *ngIf="activityLog.length > 0">
+        <mat-card-header>
+          <div class="card-header-content">
+            <mat-icon class="section-icon">history</mat-icon>
+            <div class="header-text">
+              <mat-card-title>Activity Log</mat-card-title>
+              <mat-card-subtitle>Recent operations</mat-card-subtitle>
+            </div>
+          </div>
+          <button mat-icon-button (click)="clearLog()" matTooltip="Clear log" class="header-action">
+            <mat-icon>clear_all</mat-icon>
+          </button>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="log-list">
+            <div *ngFor="let log of activityLog" class="log-item" [ngClass]="'log-' + log.type">
+              <mat-icon class="log-icon">{{ log.icon }}</mat-icon>
+              <span class="log-time">{{ log.time }}</span>
+              <span class="log-message">{{ log.message }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Empty Log State -->
+      <mat-card class="log-card empty-log" *ngIf="activityLog.length === 0">
+        <mat-card-content>
+          <div class="empty-state">
+            <mat-icon>history</mat-icon>
+            <p>No activity yet</p>
+            <p class="hint">Fetch operations will appear here</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
 </div>

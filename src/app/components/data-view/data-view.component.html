@@ -1,7 +1,230 @@
+<!-- Data View Container -->
 <div class="data-view-container">
-    <h2>Airtable Revision History</h2>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <mat-icon class="header-icon">table_view</mat-icon>
+            <div class="header-text">
+                <h1 class="page-title">Data View</h1>
+                <p class="page-subtitle">Browse and analyze data from MongoDB</p>
+            </div>
+        </div>
+        <button mat-raised-button color="primary" (click)="refreshData()" matTooltip="Refresh all data">
+            <mat-icon>refresh</mat-icon>
+            Refresh Data
+        </button>
+    </div>
 
-    <ag-grid-angular style="width: 100%; height: 600px;" class="ag-theme-alpine" [rowData]="rowData"
-        [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" [pagination]="true" [paginationPageSize]="20"
-        (gridReady)="onGridReady($event)"></ag-grid-angular>
+    <!-- Tabs for different views -->
+    <mat-card class="tabs-card">
+        <mat-tab-group animationDuration="300ms" class="data-tabs">
+
+            <!-- Bases Tab -->
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <mat-icon class="tab-icon">folder</mat-icon>
+                    <span class="tab-label">Bases</span>
+                    <span class="tab-badge">{{ bases.length }}</span>
+                </ng-template>
+
+                <div class="tab-content">
+                    <!-- Grid Actions -->
+                    <div class="grid-header">
+                        <div class="grid-info">
+                            <mat-icon>folder</mat-icon>
+                            <span class="grid-title">{{ bases.length }} Bases</span>
+                        </div>
+                        <div class="grid-actions">
+                            <button mat-icon-button (click)="exportToCSV(basesGridApi, 'bases')"
+                                matTooltip="Export to CSV" [disabled]="!basesGridApi">
+                                <mat-icon>file_download</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="exportToExcel(basesGridApi, 'bases')"
+                                matTooltip="Export to Excel" [disabled]="!basesGridApi">
+                                <mat-icon>table_chart</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div *ngIf="basesLoading" class="loading-state">
+                        <mat-spinner diameter="40"></mat-spinner>
+                        <p>Loading bases...</p>
+                    </div>
+
+                    <!-- AG Grid -->
+                    <ag-grid-angular *ngIf="!basesLoading && bases.length > 0" class="ag-theme-material grid-container"
+                        [columnDefs]="basesColumnDefs" [rowData]="basesRowData" [defaultColDef]="defaultColDef"
+                        [gridOptions]="gridOptions" (gridReady)="onBasesGridReady($event)">
+                    </ag-grid-angular>
+
+                    <!-- Empty State -->
+                    <div *ngIf="!basesLoading && bases.length === 0" class="empty-state">
+                        <mat-icon>folder_off</mat-icon>
+                        <p>No bases found</p>
+                        <p class="hint">Fetch data from the "Data Fetch" page first</p>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- Tables Tab -->
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <mat-icon class="tab-icon">table_chart</mat-icon>
+                    <span class="tab-label">Tables</span>
+                    <span class="tab-badge">{{ tables.length }}</span>
+                </ng-template>
+
+                <div class="tab-content">
+                    <!-- Grid Actions -->
+                    <div class="grid-header">
+                        <div class="grid-info">
+                            <mat-icon>table_chart</mat-icon>
+                            <span class="grid-title">{{ tables.length }} Tables</span>
+                        </div>
+                        <div class="grid-actions">
+                            <button mat-icon-button (click)="exportToCSV(tablesGridApi, 'tables')"
+                                matTooltip="Export to CSV" [disabled]="!tablesGridApi">
+                                <mat-icon>file_download</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="exportToExcel(tablesGridApi, 'tables')"
+                                matTooltip="Export to Excel" [disabled]="!tablesGridApi">
+                                <mat-icon>table_chart</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div *ngIf="tablesLoading" class="loading-state">
+                        <mat-spinner diameter="40"></mat-spinner>
+                        <p>Loading tables...</p>
+                    </div>
+
+                    <!-- AG Grid -->
+                    <ag-grid-angular *ngIf="!tablesLoading && tables.length > 0"
+                        class="ag-theme-material grid-container" [columnDefs]="tablesColumnDefs"
+                        [rowData]="tablesRowData" [defaultColDef]="defaultColDef" [gridOptions]="gridOptions"
+                        (gridReady)="onTablesGridReady($event)">
+                    </ag-grid-angular>
+
+                    <!-- Empty State -->
+                    <div *ngIf="!tablesLoading && tables.length === 0" class="empty-state">
+                        <mat-icon>table_chart</mat-icon>
+                        <p>No tables found</p>
+                        <p class="hint">Fetch data from the "Data Fetch" page first</p>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- Pages Tab -->
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <mat-icon class="tab-icon">description</mat-icon>
+                    <span class="tab-label">Pages</span>
+                    <span class="tab-badge">{{ pages.length }}</span>
+                </ng-template>
+
+                <div class="tab-content">
+                    <!-- Grid Actions -->
+                    <div class="grid-header">
+                        <div class="grid-info">
+                            <mat-icon>description</mat-icon>
+                            <span class="grid-title">{{ pages.length }} Pages (Records)</span>
+                        </div>
+                        <div class="grid-actions">
+                            <button mat-icon-button (click)="exportToCSV(pagesGridApi, 'pages')"
+                                matTooltip="Export to CSV" [disabled]="!pagesGridApi">
+                                <mat-icon>file_download</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="exportToExcel(pagesGridApi, 'pages')"
+                                matTooltip="Export to Excel" [disabled]="!pagesGridApi">
+                                <mat-icon>table_chart</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div *ngIf="pagesLoading" class="loading-state">
+                        <mat-spinner diameter="40"></mat-spinner>
+                        <p>Loading pages...</p>
+                    </div>
+
+                    <!-- AG Grid -->
+                    <ag-grid-angular *ngIf="!pagesLoading && pages.length > 0" class="ag-theme-material grid-container"
+                        [columnDefs]="pagesColumnDefs" [rowData]="pagesRowData" [defaultColDef]="defaultColDef"
+                        [gridOptions]="gridOptions" (gridReady)="onPagesGridReady($event)">
+                    </ag-grid-angular>
+
+                    <!-- Empty State -->
+                    <div *ngIf="!pagesLoading && pages.length === 0" class="empty-state">
+                        <mat-icon>description</mat-icon>
+                        <p>No pages found</p>
+                        <p class="hint">Fetch data from the "Data Fetch" page first</p>
+                    </div>
+                </div>
+            </mat-tab>
+
+            <!-- Revision History Tab -->
+            <mat-tab>
+                <ng-template mat-tab-label>
+                    <mat-icon class="tab-icon">history</mat-icon>
+                    <span class="tab-label">Revision History</span>
+                    <span class="tab-badge">{{ revisionsRowData.length }}</span>
+                </ng-template>
+
+                <div class="tab-content">
+                    <!-- Grid Actions -->
+                    <div class="grid-header">
+                        <div class="grid-info">
+                            <mat-icon>history</mat-icon>
+                            <span class="grid-title">{{ revisionsRowData.length }} Revision Changes</span>
+                        </div>
+                        <div class="grid-actions">
+                            <button mat-icon-button (click)="exportToCSV(revisionsGridApi, 'revisions')"
+                                matTooltip="Export to CSV" [disabled]="!revisionsGridApi">
+                                <mat-icon>file_download</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="exportToExcel(revisionsGridApi, 'revisions')"
+                                matTooltip="Export to Excel" [disabled]="!revisionsGridApi">
+                                <mat-icon>table_chart</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Info Banner -->
+                    <div class="info-banner" *ngIf="revisionsRowData.length > 0">
+                        <mat-icon>info</mat-icon>
+                        <div>
+                            <p>Showing flattened revision history with assignee and status changes.</p>
+                            <p class="legend">
+                                <span class="legend-item status">Status Changes</span>
+                                <span class="legend-item assignee">Assignee Changes</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div *ngIf="revisionsLoading" class="loading-state">
+                        <mat-spinner diameter="40"></mat-spinner>
+                        <p>Loading revision histories...</p>
+                    </div>
+
+                    <!-- AG Grid -->
+                    <ag-grid-angular *ngIf="!revisionsLoading && revisionsRowData.length > 0"
+                        class="ag-theme-material grid-container" [columnDefs]="revisionsColumnDefs"
+                        [rowData]="revisionsRowData" [defaultColDef]="defaultColDef" [gridOptions]="gridOptions"
+                        (gridReady)="onRevisionsGridReady($event)">
+                    </ag-grid-angular>
+
+                    <!-- Empty State -->
+                    <div *ngIf="!revisionsLoading && revisionsRowData.length === 0" class="empty-state">
+                        <mat-icon>history</mat-icon>
+                        <p>No revision history found</p>
+                        <p class="hint">Fetch revision history from the "Revision History" page first</p>
+                    </div>
+                </div>
+            </mat-tab>
+
+        </mat-tab-group>
+    </mat-card>
 </div>

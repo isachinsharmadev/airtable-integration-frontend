@@ -1,75 +1,169 @@
+/**
+ * App Component Styles
+ * Main layout container with toolbar, sidebar, and content area
+ */
+
+/* ============================================
+   LAYOUT STRUCTURE
+   ============================================ */
 .app-container {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
+/* ============================================
+   TOOLBAR
+   ============================================ */
 .toolbar {
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     background-color: var(--primary) !important;
     color: white;
+    position: relative;
 }
 
 .toolbar mat-icon {
     color: white;
+    margin-right: 8px;
 }
 
-.spacer-small {
-    margin-left: 12px;
-    color: white;
+.toolbar-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+    font-weight: 500;
 }
 
-.toolbar button {
-    margin-left: auto !important;
+.spacer {
+    flex: 1 1 auto;
 }
 
+.toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.auth-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    font-size: 0.875rem;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-indicator.connected {
+    background-color: var(--success);
+    box-shadow: 0 0 8px var(--success);
+}
+
+.status-indicator.disconnected {
+    background-color: var(--error);
+    box-shadow: 0 0 8px var(--error);
+}
+
+/* ============================================
+   DRAWER (SIDEBAR)
+   ============================================ */
 .drawer-container {
     flex: 1;
-    background-color: #fafafa;
+    background-color: var(--gray-50);
+    overflow: hidden;
 }
 
 .drawer {
     width: 250px;
     padding: 16px 0;
     background-color: white;
-    border-right: 1px solid #e0e0e0;
+    border-right: 1px solid var(--gray-200);
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
 }
 
-.content {
-    display: flex;
-    flex-direction: column;
+/* Navigation List Items */
+mat-nav-list a {
+    transition: all 0.2s ease-in-out;
+    margin: 4px 8px;
+    border-radius: 8px;
+    position: relative;
 }
 
-.progress-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1;
+mat-nav-list a:hover:not(.locked-link) {
+    background-color: var(--gray-100) !important;
 }
 
-.content-wrapper {
-    padding: 24px;
-    flex: 1;
-    overflow: auto;
-}
-
+/* Active Link Styling */
 .active-link {
     background-color: var(--primary) !important;
     color: white !important;
-    border-left: 4px solid #f39c12 !important;
+    border-left: 4px solid var(--warning);
     font-weight: 500;
 }
 
-mat-icon[matListItemIcon] {
-    color: rgba(0, 0, 0, 0.54);
-}
-
-.active-link mat-icon[matListItemIcon] {
+.active-link mat-icon {
     color: white !important;
 }
 
+/* Locked Link Styling */
+.locked-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background-color: transparent !important;
+}
+
+.locked-link mat-icon {
+    color: var(--locked) !important;
+}
+
+.locked-link .mat-mdc-list-item-title {
+    color: var(--locked) !important;
+}
+
+.lock-icon {
+    position: absolute;
+    right: 16px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Navigation Badge (for counts) */
+.nav-badge {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--primary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.active-link .nav-badge {
+    background-color: white;
+    color: var(--primary);
+}
+
+/* Default Icon Color */
+mat-icon[matListItemIcon] {
+    color: var(--gray-600);
+    transition: color 0.2s ease-in-out;
+}
+
+/* Material Design Deep Overrides for Active Links */
 ::ng-deep .active-link {
     background-color: var(--primary) !important;
     color: white !important;
@@ -81,4 +175,69 @@ mat-icon[matListItemIcon] {
 
 ::ng-deep .active-link mat-icon {
     color: white !important;
+}
+
+/* ============================================
+   CONTENT AREA
+   ============================================ */
+.content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+}
+
+.progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.content-wrapper {
+    padding: var(--spacing-lg);
+    flex: 1;
+    overflow: auto;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet and below */
+@media (max-width: 768px) {
+    .drawer {
+        width: 200px;
+    }
+
+    .content-wrapper {
+        padding: var(--spacing-md);
+    }
+
+    .toolbar-title {
+        font-size: 1rem;
+    }
+
+    .auth-status-badge {
+        display: none;
+        /* Hide on mobile to save space */
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .drawer {
+        width: 100%;
+    }
+
+    .content-wrapper {
+        padding: var(--spacing-sm);
+    }
+
+    .toolbar-title span {
+        display: none;
+        /* Show only icon on mobile */
+    }
 }

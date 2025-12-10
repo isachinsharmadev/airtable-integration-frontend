@@ -1,175 +1,240 @@
+<!-- Authentication Container with Two-Column Layout -->
 <div class="auth-container">
-  <h1 class="page-title">Authentication</h1>
-
-  <!-- OAuth Section -->
-  <mat-card class="auth-card">
-    <mat-card-header>
-      <mat-icon class="section-icon">vpn_key</mat-icon>
-      <mat-card-title>OAuth 2.0 Authentication</mat-card-title>
-      <mat-card-subtitle>Connect to Airtable API using OAuth</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="status-section">
-        <div class="status-item">
-          <strong>Status:</strong>
-          <span [class]="
-                  authStatus.authenticated ? 'status-active' : 'status-inactive'
-                ">
-            {{ authStatus.authenticated ? 'Connected' : 'Not Connected' }}
-          </span>
-        </div>
-        <div *ngIf="authStatus.authenticated && authStatus.expiresAt" class="status-item">
-          <strong>Expires:</strong>
-          <span>{{ formatDate(authStatus.expiresAt) }}</span>
-        </div>
-        <div *ngIf="authStatus.expired" class="status-item warning">
-          <mat-icon>warning</mat-icon>
-          Token expired. Please refresh or re-authenticate.
-        </div>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <mat-icon class="header-icon">lock_open</mat-icon>
+      <div class="header-text">
+        <h1 class="page-title">Authentication</h1>
+        <p class="page-subtitle">Connect to Airtable using OAuth or direct login</p>
       </div>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button color="primary" (click)="initiateOAuth()" [disabled]="oauthLoading">
-        <mat-spinner *ngIf="oauthLoading" diameter="20"></mat-spinner>
-        <mat-icon *ngIf="!oauthLoading">login</mat-icon>
-        {{
-        authStatus.authenticated
-        ? 'Re-authenticate'
-        : 'Connect with Airtable'
-        }}
-      </button>
-      <button mat-button (click)="refreshToken()" *ngIf="authStatus.authenticated" [disabled]="oauthLoading">
-        <mat-icon>refresh</mat-icon>
-        Refresh Token
-      </button>
-    </mat-card-actions>
-  </mat-card>
+    </div>
+  </div>
 
-  <mat-divider style="margin: 32px 0;"></mat-divider>
+  <!-- Two-Column Layout -->
+  <div class="auth-layout">
+    <!-- Left Column: OAuth Authentication -->
+    <div class="auth-column oauth-column">
+      <mat-card class="auth-card primary-card">
+        <mat-card-header>
+          <div class="card-header-content">
+            <mat-icon class="section-icon primary">vpn_key</mat-icon>
+            <div class="header-text">
+              <mat-card-title>OAuth 2.0 Authentication</mat-card-title>
+              <mat-card-subtitle>Secure API access with OAuth</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
 
-  <!-- Scraping Authentication Section -->
-  <mat-card class="auth-card">
-    <mat-card-header>
-      <mat-icon class="section-icon">cookie</mat-icon>
-      <mat-card-title>Scraping Authentication</mat-card-title>
-      <mat-card-subtitle>Login for accessing revision history</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="status-section">
-        <div class="status-item">
-          <strong>Cookie Status:</strong>
-          <span [class]="
-                  cookieStatus.valid ? 'status-active' : 'status-inactive'
-                ">
-            {{
-            cookieStatus.hasCookies
-            ? cookieStatus.valid
-            ? 'Valid'
-            : 'Invalid'
-            : 'Not Available'
-            }}
-          </span>
-        </div>
-        <div *ngIf="cookieStatus.lastValidated" class="status-item">
-          <strong>Last Validated:</strong>
-          <span>{{ formatDate(cookieStatus.lastValidated) }}</span>
-        </div>
-      </div>
+        <mat-card-content>
+          <!-- Status Display -->
+          <div class="status-display" [class.status-connected]="authStatus.authenticated"
+            [class.status-disconnected]="!authStatus.authenticated">
+            <div class="status-indicator">
+              <div class="status-pulse" *ngIf="authStatus.authenticated"></div>
+              <mat-icon>{{ authStatus.authenticated ? 'check_circle' : 'cancel' }}</mat-icon>
+            </div>
+            <div class="status-details">
+              <div class="status-main">
+                {{ authStatus.authenticated ? 'Connected' : 'Not Connected' }}
+              </div>
+              <div class="status-sub" *ngIf="authStatus.authenticated && authStatus.expiresAt">
+                Expires in {{ getTimeRemaining(authStatus.expiresAt) }}
+              </div>
+              <div class="status-sub" *ngIf="!authStatus.authenticated">
+                Click below to connect
+              </div>
+            </div>
+          </div>
 
-      <!-- MFA Required Banner -->
-      <div *ngIf="mfaRequired" class="mfa-banner">
-        <mat-icon>shield</mat-icon>
-        <div class="mfa-message">
-          <strong>MFA Required</strong>
-          <p>Please enter the 6-digit code from your authenticator app below and click Authenticate again.</p>
-        </div>
-      </div>
+          <!-- Expiring Soon Warning -->
+          <div class="warning-banner" *ngIf="isExpiringSoon()">
+            <mat-icon>warning_amber</mat-icon>
+            <div>
+              <strong>Token Expiring Soon</strong>
+              <p>Your token will expire in less than 5 minutes. Consider refreshing it.</p>
+            </div>
+          </div>
 
-      <form class="scraping-form" (ngSubmit)="authenticateScraping()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" [(ngModel)]="scrapingCreds.email" name="email" required />
-          <mat-icon matSuffix>email</mat-icon>
-        </mat-form-field>
+          <!-- Expired Warning -->
+          <div class="error-banner" *ngIf="authStatus.expired">
+            <mat-icon>error</mat-icon>
+            <div>
+              <strong>Token Expired</strong>
+              <p>Your token has expired. Please refresh or re-authenticate.</p>
+            </div>
+          </div>
 
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="scrapingCreds.password"
-            name="password" required autocomplete="current-password" />
-          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
-            <mat-icon>{{
-              hidePassword ? 'visibility_off' : 'visibility'
-              }}</mat-icon>
+          <!-- Info Section -->
+          <div class="info-section">
+            <div class="info-item">
+              <mat-icon class="info-icon">info</mat-icon>
+              <div>
+                <strong>What is OAuth?</strong>
+                <p>OAuth 2.0 is a secure authentication method that allows you to access Airtable data without sharing
+                  your password.</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <mat-icon class="info-icon">check_circle</mat-icon>
+              <div>
+                <strong>What You Get</strong>
+                <p>Access to bases, tables, and records through the official Airtable API.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Token Details (when authenticated) -->
+          <div class="details-section" *ngIf="authStatus.authenticated">
+            <div class="detail-item">
+              <mat-icon class="detail-icon">schedule</mat-icon>
+              <div class="detail-content">
+                <div class="detail-label">Expires At</div>
+                <div class="detail-value">{{ formatDate(authStatus.expiresAt) }}</div>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button mat-raised-button color="primary" class="primary-button" (click)="initiateOAuth()"
+            [disabled]="oauthLoading">
+            <mat-spinner *ngIf="oauthLoading" diameter="20" class="button-spinner"></mat-spinner>
+            <mat-icon *ngIf="!oauthLoading">{{ authStatus.authenticated ? 'refresh' : 'login' }}</mat-icon>
+            {{ authStatus.authenticated ? 'Re-authenticate' : 'Connect with Airtable' }}
           </button>
-        </mat-form-field>
 
-        <mat-form-field appearance="outline" class="full-width" [class.mfa-highlight]="mfaRequired">
-          <mat-label>MFA Code {{ mfaRequired ? '(Required)' : '(Optional)' }}</mat-label>
-          <input matInput [(ngModel)]="scrapingCreds.mfaCode" name="mfaCode"
-            [placeholder]="mfaRequired ? 'Enter 6-digit code' : 'Enter if MFA is enabled'" maxlength="6"
-            [required]="mfaRequired" />
-          <mat-icon matSuffix [class.mfa-required-icon]="mfaRequired">security</mat-icon>
-          <mat-hint *ngIf="mfaRequired">Enter the code from your authenticator app</mat-hint>
-        </mat-form-field>
+          <button mat-stroked-button class="secondary-button" (click)="refreshToken()" *ngIf="authStatus.authenticated"
+            [disabled]="oauthLoading">
+            <mat-icon>autorenew</mat-icon>
+            Refresh Token
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
 
-        <div class="form-actions">
-          <button mat-raised-button color="primary" type="submit" [disabled]="
-                  scrapingLoading ||
-                  !scrapingCreds.email ||
-                  !scrapingCreds.password ||
-                  (mfaRequired && !scrapingCreds.mfaCode)
-                ">
-            <mat-spinner *ngIf="scrapingLoading" diameter="20"></mat-spinner>
-            <mat-icon *ngIf="!scrapingLoading">{{ mfaRequired ? 'shield' : 'login' }}</mat-icon>
-            {{ mfaRequired ? 'Verify MFA' : 'Authenticate' }}
-          </button>
-          <button mat-button type="button" (click)="validateCookies()" [disabled]="scrapingLoading">
-            <mat-icon>verified</mat-icon>
-            Validate Cookies
-          </button>
-          <button mat-button color="warn" type="button" (click)="clearCookies()" [disabled]="scrapingLoading">
-            <mat-icon>delete</mat-icon>
-            Clear Cookies
-          </button>
-        </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+    <!-- Right Column: Scraping Authentication -->
+    <div class="auth-column scraping-column">
+      <mat-card class="auth-card secondary-card">
+        <mat-card-header>
+          <div class="card-header-content">
+            <mat-icon class="section-icon secondary">cookie</mat-icon>
+            <div class="header-text">
+              <mat-card-title>Scraping Authentication</mat-card-title>
+              <mat-card-subtitle>Direct login for revision history</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Status Display -->
+          <div class="status-display" [class.status-connected]="cookieStatus.valid"
+            [class.status-disconnected]="!cookieStatus.valid">
+            <div class="status-indicator">
+              <div class="status-pulse" *ngIf="cookieStatus.valid"></div>
+              <mat-icon>{{ cookieStatus.valid ? 'check_circle' : 'cancel' }}</mat-icon>
+            </div>
+            <div class="status-details">
+              <div class="status-main">
+                {{ cookieStatus.hasCookies ? (cookieStatus.valid ? 'Cookies Valid' : 'Cookies Invalid') : 'No Cookies'
+                }}
+              </div>
+              <div class="status-sub" *ngIf="cookieStatus.lastValidated">
+                Last validated {{ formatDate(cookieStatus.lastValidated) }}
+              </div>
+              <div class="status-sub" *ngIf="!cookieStatus.hasCookies">
+                Enter credentials below to authenticate
+              </div>
+            </div>
+          </div>
+
+          <!-- MFA Required Banner -->
+          <div class="mfa-banner" *ngIf="mfaRequired">
+            <mat-icon>shield</mat-icon>
+            <div class="mfa-content">
+              <strong>MFA Required</strong>
+              <p>Enter the 6-digit code from your authenticator app and click "Verify MFA".</p>
+            </div>
+          </div>
+
+          <!-- Info Section -->
+          <div class="info-section" *ngIf="!cookieStatus.hasCookies && !mfaRequired">
+            <div class="info-item">
+              <mat-icon class="info-icon">find_in_page</mat-icon>
+              <div>
+                <strong>Why Scraping?</strong>
+                <p>Revision history is not available via the API. We use browser automation to access it securely.</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <mat-icon class="info-icon">security</mat-icon>
+              <div>
+                <strong>Your Security</strong>
+                <p>Credentials are used only to obtain session cookies and are never stored.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Authentication Form -->
+          <form class="scraping-form" #scrapingForm="ngForm" (ngSubmit)="authenticateScraping(scrapingForm)">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email Address</mat-label>
+              <input matInput type="email" [(ngModel)]="scrapingCreds.email" name="email"
+                placeholder="your.email@example.com" required autocomplete="email" />
+              <mat-icon matPrefix>email</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="scrapingCreds.password"
+                name="password" placeholder="Enter your password" required autocomplete="current-password" />
+              <mat-icon matPrefix>lock</mat-icon>
+              <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
+                matTooltip="{{ hidePassword ? 'Show' : 'Hide' }} password">
+                <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width" [class.mfa-highlight]="mfaRequired">
+              <mat-label>MFA Code {{ mfaRequired ? '(Required)' : '(Optional)' }}</mat-label>
+              <input matInput [(ngModel)]="scrapingCreds.mfaCode" name="mfaCode"
+                placeholder="{{ mfaRequired ? 'Enter 6-digit code' : 'If MFA enabled' }}" maxlength="6"
+                [required]="mfaRequired" autocomplete="one-time-code" />
+              <mat-icon matPrefix [class.mfa-required-icon]="mfaRequired">shield</mat-icon>
+              <mat-hint *ngIf="mfaRequired">Enter code from your authenticator app</mat-hint>
+            </mat-form-field>
+
+            <div class="form-actions">
+              <button mat-raised-button color="primary" type="submit" class="primary-button"
+                [disabled]="scrapingLoading || !scrapingCreds.email || !scrapingCreds.password || (mfaRequired && !scrapingCreds.mfaCode)">
+                <mat-spinner *ngIf="scrapingLoading" diameter="20" class="button-spinner"></mat-spinner>
+                <mat-icon *ngIf="!scrapingLoading">{{ mfaRequired ? 'shield' : 'login' }}</mat-icon>
+                {{ scrapingLoading
+                ? (mfaRequired ? 'Verifying...' : 'Authenticating...')
+                : (mfaRequired ? 'Verify MFA' : 'Authenticate')
+                }}
+              </button>
+
+              <button mat-stroked-button type="button" class="secondary-button" (click)="validateCookies()"
+                [disabled]="scrapingLoading" matTooltip="Check if stored cookies are still valid">
+                <mat-icon>verified</mat-icon>
+                Validate
+              </button>
+
+              <button mat-stroked-button color="warn" type="button" class="secondary-button" (click)="clearCookies()"
+                [disabled]="scrapingLoading" matTooltip="Clear stored cookies">
+                <mat-icon>delete_outline</mat-icon>
+                Clear
+              </button>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
 
   <div class="help-section">
-    <mat-card>
-      <mat-card-header>
-        <mat-icon class="section-icon">help</mat-icon>
-        <mat-card-title>Authentication Guide</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <h3>OAuth Authentication</h3>
-        <p>
-          OAuth is used to access the Airtable API for fetching bases,
-          tables, and records. Click "Connect with Airtable" to start the
-          OAuth flow.
-        </p>
-
-        <h3>Scraping Authentication</h3>
-        <p>
-          Scraping authentication is required to access revision history
-          which is not available via the API. Enter your Airtable
-          credentials to retrieve cookies for scraping.
-        </p>
-
-        <h3>Multi-Factor Authentication (MFA)</h3>
-        <p>
-          If your Airtable account has MFA enabled, you'll be prompted to enter
-          your 6-digit authentication code after submitting your email and password.
-          Simply enter the code from your authenticator app and click "Verify MFA".
-        </p>
-
-        <p class="warning-text">
-          <mat-icon>warning</mat-icon>
-          Note: Your credentials are used only to retrieve cookies and are
-          not stored.
-        </p>
-      </mat-card-content>
+    <mat-card class="help-card">
     </mat-card>
   </div>
 </div>

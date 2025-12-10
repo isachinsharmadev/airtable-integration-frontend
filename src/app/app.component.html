@@ -1,43 +1,62 @@
+<!-- Main application container -->
 <div class="app-container">
+  <!-- Toolbar / Header -->
   <mat-toolbar color="primary" class="toolbar">
-    <mat-icon>cloud_sync</mat-icon>
-    <span class="spacer-small">Airtable Integration Dashboard</span>
+    <div class="toolbar-title">
+      <mat-icon>cloud_sync</mat-icon>
+      <span>Airtable Integration Dashboard</span>
+    </div>
+
     <span class="spacer"></span>
-    <button mat-icon-button *ngIf="authStatus.authenticated" (click)="logout()">
-      <mat-icon>logout</mat-icon>
-    </button>
+
+    <!-- Authentication Status Badge -->
+    <div class="auth-status-badge" *ngIf="authStatus.authenticated">
+      <span class="status-indicator" [ngClass]="getStatusIndicatorClass()"></span>
+      <span>{{ getAuthStatusText() }}</span>
+    </div>
+
+    <!-- Toolbar Actions -->
+    <div class="toolbar-actions">
+      <!-- Logout Button (only shown when authenticated) -->
+      <button mat-icon-button *ngIf="authStatus.authenticated" (click)="logout()" matTooltip="Logout"
+        aria-label="Logout">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
   </mat-toolbar>
 
+  <!-- Drawer Container (Sidebar + Content) -->
   <mat-drawer-container class="drawer-container" autosize>
+    <!-- Sidebar Navigation -->
     <mat-drawer #drawer mode="side" opened class="drawer">
       <mat-nav-list>
-        <!-- <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>dashboard</mat-icon>
-          <span matListItemTitle>Dashboard</span>
-        </a> -->
-        <a mat-list-item routerLink="/authentication" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>lock</mat-icon>
-          <span matListItemTitle>Dashboard</span>
-        </a>
-        <a mat-list-item routerLink="/data-fetch" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>cloud_download</mat-icon>
-          <span matListItemTitle>Data Fetch</span>
-        </a>
-        <a mat-list-item routerLink="/scraping" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>find_in_page</mat-icon>
-          <span matListItemTitle>Revision History</span>
-        </a>
-        <a mat-list-item routerLink="/data-view" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>table_view</mat-icon>
-          <span matListItemTitle>Data View</span>
-        </a>
+        <ng-container *ngFor="let item of navItems">
+          <a mat-list-item [routerLink]="item.route" routerLinkActive="active-link"
+            [class.locked-link]="isNavItemLocked(item)" [matTooltip]="getNavItemTooltip(item)"
+            matTooltipPosition="right" (click)="onNavItemClick(item, $event)">
+
+            <!-- Icon -->
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+
+            <!-- Label -->
+            <span matListItemTitle>{{ item.label }}</span>
+
+            <!-- Lock Icon (for locked items) -->
+            <mat-icon class="lock-icon" *ngIf="isNavItemLocked(item)">
+              lock
+            </mat-icon>
+          </a>
+        </ng-container>
       </mat-nav-list>
     </mat-drawer>
 
+    <!-- Main Content Area -->
     <mat-drawer-content class="content">
-      <mat-progress-bar *ngIf="loading" mode="indeterminate" class="progress-bar">
+      <!-- Loading Progress Bar -->
+      <mat-progress-bar *ngIf="loading" mode="indeterminate" class="progress-bar" color="accent">
       </mat-progress-bar>
 
+      <!-- Content Wrapper -->
       <div class="content-wrapper">
         <router-outlet></router-outlet>
       </div>

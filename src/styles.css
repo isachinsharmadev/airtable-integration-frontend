@@ -1,25 +1,93 @@
-/* @import 'ag-grid-community/styles/ag-grid.css';
-@import 'ag-grid-community/styles/ag-theme-material.css'; */
+/**
+ * Global Styles - Airtable Integration Dashboard
+ * 
+ * This file contains:
+ * - CSS variables (design tokens)
+ * - Global resets
+ * - Material Design overrides
+ * - Utility classes
+ */
 
+/* ============================================
+   CSS VARIABLES (DESIGN TOKENS)
+   ============================================ */
 :root {
+    /* Primary Colors */
     --primary: #1a63bc;
-    --primary-dark: #1f16a0;
-    --warning: #f39c12;
-    --error: #e74c3c;
+    --primary-dark: #1547a0;
+    --primary-light: #dbeafe;
+    --primary-hover: #1547a0;
+
+    /* Status Colors */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+
+    /* Neutral Colors */
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+
+    /* Semantic Colors */
+    --locked: var(--gray-400);
+    --authenticated: var(--success);
+    --not-authenticated: var(--error);
+
+    /* Spacing Scale */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-2xl: 48px;
+
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-pill: 24px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* ============================================
+   GLOBAL RESETS
+   ============================================ */
 html,
 body {
     height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-    margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
-    background-color: #f8f9fa;
+    background-color: var(--gray-50);
+    color: var(--gray-900);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Primary Button Styling */
+* {
+    box-sizing: border-box;
+}
+
+/* ============================================
+   MATERIAL DESIGN OVERRIDES - BUTTONS
+   ============================================ */
+
+/* Primary Buttons */
 button[mat-raised-button][color="primary"],
 button[mat-flat-button][color="primary"] {
     background-color: var(--primary) !important;
@@ -27,41 +95,325 @@ button[mat-flat-button][color="primary"] {
     min-width: 120px;
     padding: 10px 24px !important;
     font-weight: 500;
-    border-radius: 20px;
+    border-radius: var(--radius-pill) !important;
+    transition: all 0.2s ease-in-out;
 }
 
-button[mat-raised-button][color="primary"]:hover,
-button[mat-flat-button][color="primary"]:hover {
-    background-color: var(--primary-dark) !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+button[mat-raised-button][color="primary"]:hover:not([disabled]),
+button[mat-flat-button][color="primary"]:hover:not([disabled]) {
+    background-color: var(--primary-hover) !important;
+    box-shadow: var(--shadow-lg) !important;
+    transform: translateY(-1px);
 }
 
-/* Secondary Button Styling */
+button[mat-raised-button][color="primary"]:active,
+button[mat-flat-button][color="primary"]:active {
+    transform: translateY(0);
+}
+
+/* Secondary Buttons */
 button[mat-stroked-button],
 button[mat-button] {
     color: var(--primary) !important;
     min-width: 120px;
     padding: 10px 24px !important;
     font-weight: 500;
-    border-radius: 20px;
+    border-radius: var(--radius-pill) !important;
+    transition: all 0.2s ease-in-out;
 }
 
 button[mat-stroked-button] {
     border: 2px solid var(--primary) !important;
 }
 
-button[mat-stroked-button]:hover,
-button[mat-button]:hover {
-    background-color: rgba(26, 188, 156, 0.08) !important;
+button[mat-stroked-button]:hover:not([disabled]),
+button[mat-button]:hover:not([disabled]) {
+    background-color: var(--primary-light) !important;
 }
 
-/* Button Spacing in Groups */
+/* Disabled Buttons */
+button[mat-raised-button][disabled],
+button[mat-flat-button][disabled],
+button[mat-stroked-button][disabled],
+button[mat-button][disabled] {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}
+
+/* Icon Buttons */
+button[mat-icon-button] {
+    transition: all 0.2s ease-in-out;
+}
+
+button[mat-icon-button]:hover:not([disabled]) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ============================================
+   MATERIAL DESIGN OVERRIDES - CARDS
+   ============================================ */
+mat-card {
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+mat-card:hover {
+    box-shadow: var(--shadow-md) !important;
+}
+
+mat-card-header {
+    margin-bottom: var(--spacing-md);
+}
+
 mat-card-actions {
-    gap: 12px;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg) !important;
 }
 
-/* Toolbar buttons white text */
+/* ============================================
+   MATERIAL DESIGN OVERRIDES - FORM FIELDS
+   ============================================ */
+mat-form-field {
+    width: 100%;
+}
+
+.mat-mdc-form-field {
+    margin-bottom: var(--spacing-sm);
+}
+
+/* ============================================
+   MATERIAL DESIGN OVERRIDES - TOOLBAR
+   ============================================ */
 mat-toolbar button,
-mat-toolbar .mat-mdc-icon-button {
+mat-toolbar .mat-mdc-icon-button,
+mat-toolbar mat-icon {
     color: white !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Spacing Utilities */
+.mt-xs {
+    margin-top: var(--spacing-xs);
+}
+
+.mt-sm {
+    margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+    margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mt-xl {
+    margin-top: var(--spacing-xl);
+}
+
+.mb-xs {
+    margin-bottom: var(--spacing-xs);
+}
+
+.mb-sm {
+    margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
+
+.mb-xl {
+    margin-bottom: var(--spacing-xl);
+}
+
+.p-xs {
+    padding: var(--spacing-xs);
+}
+
+.p-sm {
+    padding: var(--spacing-sm);
+}
+
+.p-md {
+    padding: var(--spacing-md);
+}
+
+.p-lg {
+    padding: var(--spacing-lg);
+}
+
+.p-xl {
+    padding: var(--spacing-xl);
+}
+
+/* Text Utilities */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-muted {
+    color: var(--gray-500);
+}
+
+.text-success {
+    color: var(--success);
+}
+
+.text-warning {
+    color: var(--warning);
+}
+
+.text-error {
+    color: var(--error);
+}
+
+.text-info {
+    color: var(--info);
+}
+
+/* Display Utilities */
+.d-block {
+    display: block;
+}
+
+.d-inline-block {
+    display: inline-block;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.d-none {
+    display: none;
+}
+
+/* Flexbox Utilities */
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-row {
+    flex-direction: row;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.align-start {
+    align-items: flex-start;
+}
+
+.align-end {
+    align-items: flex-end;
+}
+
+.gap-xs {
+    gap: var(--spacing-xs);
+}
+
+.gap-sm {
+    gap: var(--spacing-sm);
+}
+
+.gap-md {
+    gap: var(--spacing-md);
+}
+
+.gap-lg {
+    gap: var(--spacing-lg);
+}
+
+/* Width Utilities */
+.w-full {
+    width: 100%;
+}
+
+.w-auto {
+    width: auto;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gray-400);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
 }
