@@ -29,7 +29,7 @@
         </div>
         <div *ngIf="cookieStatus.lastValidated" class="status-item">
           <strong>Last Validated:</strong>
-          <span>{{ cookieStatus.lastValidated | date:'medium' }}</span>
+          <span>{{ cookieStatus.lastValidated }}</span>
         </div>
         <div *ngIf="!cookieStatus.hasCookies || !cookieStatus.valid" class="warning-box">
           <mat-icon>warning</mat-icon>

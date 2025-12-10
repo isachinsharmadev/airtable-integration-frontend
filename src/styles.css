@@ -1,6 +1,13 @@
 /* @import 'ag-grid-community/styles/ag-grid.css';
 @import 'ag-grid-community/styles/ag-theme-material.css'; */
 
+:root {
+    --primary: #1a63bc;
+    --primary-dark: #1f16a0;
+    --warning: #f39c12;
+    --error: #e74c3c;
+}
+
 html,
 body {
     height: 100%;
@@ -9,4 +16,52 @@ body {
 body {
     margin: 0;
     font-family: Roboto, "Helvetica Neue", sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Primary Button Styling */
+button[mat-raised-button][color="primary"],
+button[mat-flat-button][color="primary"] {
+    background-color: var(--primary) !important;
+    color: white !important;
+    min-width: 120px;
+    padding: 10px 24px !important;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+button[mat-raised-button][color="primary"]:hover,
+button[mat-flat-button][color="primary"]:hover {
+    background-color: var(--primary-dark) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Secondary Button Styling */
+button[mat-stroked-button],
+button[mat-button] {
+    color: var(--primary) !important;
+    min-width: 120px;
+    padding: 10px 24px !important;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+button[mat-stroked-button] {
+    border: 2px solid var(--primary) !important;
+}
+
+button[mat-stroked-button]:hover,
+button[mat-button]:hover {
+    background-color: rgba(26, 188, 156, 0.08) !important;
+}
+
+/* Button Spacing in Groups */
+mat-card-actions {
+    gap: 12px;
+}
+
+/* Toolbar buttons white text */
+mat-toolbar button,
+mat-toolbar .mat-mdc-icon-button {
+    color: white !important;
 }

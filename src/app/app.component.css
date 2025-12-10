@@ -7,14 +7,21 @@
 .toolbar {
     z-index: 2;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--primary) !important;
+    color: white;
 }
 
-.spacer {
-    flex: 1 1 auto;
+.toolbar mat-icon {
+    color: white;
 }
 
 .spacer-small {
     margin-left: 12px;
+    color: white;
+}
+
+.toolbar button {
+    margin-left: auto !important;
 }
 
 .drawer-container {
@@ -49,8 +56,10 @@
 }
 
 .active-link {
-    background-color: rgba(63, 81, 181, 0.1);
-    color: #3f51b5;
+    background-color: var(--primary) !important;
+    color: white !important;
+    border-left: 4px solid #f39c12 !important;
+    font-weight: 500;
 }
 
 mat-icon[matListItemIcon] {
@@ -58,5 +67,18 @@ mat-icon[matListItemIcon] {
 }
 
 .active-link mat-icon[matListItemIcon] {
-    color: #3f51b5;
+    color: white !important;
+}
+
+::ng-deep .active-link {
+    background-color: var(--primary) !important;
+    color: white !important;
+}
+
+::ng-deep .active-link .mat-mdc-list-item-title {
+    color: white !important;
+}
+
+::ng-deep .active-link mat-icon {
+    color: white !important;
 }

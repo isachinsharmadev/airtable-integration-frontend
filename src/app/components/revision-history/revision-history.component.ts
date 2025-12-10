@@ -3,6 +3,7 @@ import {
   FormBuilder,
   FormGroup,
   FormsModule,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -20,6 +21,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AgGridAngular } from 'ag-grid-angular';
 
 @Component({
   selector: 'app-revision-history',
@@ -35,6 +37,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatDividerModule,
+    ReactiveFormsModule,
+    AgGridAngular,
   ],
   templateUrl: './revision-history.component.html',
   styleUrls: ['./revision-history.component.css'],
