@@ -35,7 +35,8 @@ interface ActivityLog {
 interface Stats {
   bases: number;
   tables: number;
-  pages: number;
+  records: number;
+  uniqueUsers?: number; // Optional for backward compatibility
 }
 
 @Component({
@@ -65,7 +66,7 @@ export class DataFetchComponent implements OnInit, OnDestroy {
   pagesLoading = false;
 
   // Data
-  stats: Stats = { bases: 0, tables: 0, pages: 0 };
+  stats: Stats = { bases: 0, tables: 0, records: 0 };
   bases: any[] = [];
   tables: any[] = [];
   pages: any[] = [];
@@ -200,18 +201,38 @@ export class DataFetchComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          const summary = response.summary;
-          console.log('[DataFetch] Fetch complete:', summary);
+          console.log('[DataFetch] Fetch complete:', response);
 
-          this.showMessage(
-            `Successfully fetched: ${summary.bases} bases, ${summary.tables} tables, ${summary.pages} pages`,
-            'success'
-          );
+          // Handle new response structure
+          const stats = response.stats || {};
+          const userStats = response.userStats || {};
+          const duration = response.durationSeconds || 0;
 
-          this.addLog(
-            'success',
-            `Fetched ${summary.bases} bases, ${summary.tables} tables, ${summary.pages} pages`
-          );
+          // Build success message
+          const message = `Successfully fetched in ${duration}s: ${
+            stats.bases || 0
+          } bases, ${stats.tables || 0} tables, ${stats.records || 0} records${
+            stats.users ? `, ${stats.users} users` : ''
+          }`;
+
+          this.showMessage(message, 'success');
+
+          // Add detailed log
+          let logMessage = `Fetched ${stats.bases || 0} bases, ${
+            stats.tables || 0
+          } tables, ${stats.records || 0} records`;
+          if (stats.users) {
+            logMessage += `, ${stats.users} users`;
+          }
+          if (userStats.totalUsers) {
+            logMessage += ` (${userStats.byType?.current_user || 0} current, ${
+              userStats.byType?.collaborator || 0
+            } collaborators)`;
+          }
+          this.addLog('success', logMessage);
+
+          // Log duration
+          this.addLog('info', `Completed in ${duration} seconds`);
 
           this.loading = false;
           this.refreshStats();

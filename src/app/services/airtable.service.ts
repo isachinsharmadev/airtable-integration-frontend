@@ -67,7 +67,7 @@ export class AirtableService {
   getPages(
     baseId?: string,
     tableId?: string,
-    limit: number = 200
+    limit: number = 1000
   ): Observable<any> {
     const params: any = { limit };
     if (baseId) params.baseId = baseId;
@@ -117,7 +117,7 @@ export class AirtableService {
     pageId?: string,
     baseId?: string,
     tableId?: string,
-    limit: number = 200
+    limit: number = 1000
   ): Observable<any> {
     const params: any = { limit };
     if (pageId) params.pageId = pageId;

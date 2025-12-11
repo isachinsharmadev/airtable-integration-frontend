@@ -240,8 +240,15 @@
               <div class="stat-icon">
                 <mat-icon>description</mat-icon>
               </div>
-              <div class="stat-value">{{ stats.pages || 0 }}</div>
+              <div class="stat-value">{{ stats.records || 0 }}</div>
               <div class="stat-label">Pages</div>
+            </div>
+            <div class="stat-item" *ngIf="stats.uniqueUsers !== undefined">
+              <div class="stat-icon">
+                <mat-icon>people</mat-icon>
+              </div>
+              <div class="stat-value">{{ stats.uniqueUsers || 0 }}</div>
+              <div class="stat-label">Users</div>
             </div>
           </div>
         </mat-card-content>
